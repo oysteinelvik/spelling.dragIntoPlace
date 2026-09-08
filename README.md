@@ -1,4 +1,4 @@
-# Word Drift
+# Drag Into Place
 
 A dependency-free MVP of the Curious Reader Drag Into Place literacy game.
 
