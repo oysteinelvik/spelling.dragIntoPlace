@@ -1,7 +1,7 @@
 # Curious Reader Drag Into Place
 ## Product Requirements Document
 
-**Version:** 0.2.0  
+**Version:** 0.2.1  
 **Status:** Draft  
 **Last updated:** 2026-09-08  
 **Author:** GitHub Copilot  
@@ -84,7 +84,7 @@ A contributor who must be able to reproduce the product from the repository, run
 ### 7.2 Learning interaction
 
 - **PR-06:** A puzzle shall present an image clue, the target word as empty slots, and a set of target letter tiles plus JSON-defined foils.
-- **PR-07:** The learner shall be able to place a tile in a valid empty slot using drag and drop or an equivalent selection action.
+- **PR-07:** The learner shall place a tile only by dragging it into a valid empty slot; clicking or keyboard activation shall not place it.
 - **PR-08:** The game shall identify correct and incorrect placement deterministically from the active puzzle data.
 - **PR-09:** Incorrect target-letter placement shall play negative feedback and return the letter to a random on-screen location without allowing it off-screen.
 - **PR-10:** Dropping a foil shall play negative feedback, remove the foil, and reveal the corresponding hint image when hints are enabled.
@@ -153,5 +153,6 @@ Approved changes are made deliberately after a task is implemented and tested. T
 
 ## Spec Change Log
 
+2026-09-08 — GitHub Copilot — Restricted letter placement to drag-and-drop into the correct answer slot; click and keyboard activation no longer place letters.
 2026-09-08 — GitHub Copilot — Aligned the product requirements with the downloaded Drag Into Place brief, adding English spelling, foils, hints, media feedback, and bounded letter placement behavior.
 2026-09-08 — GitHub Copilot — Created the initial product requirements for the Curious Reader Drag Into Place game.

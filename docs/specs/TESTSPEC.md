@@ -1,7 +1,7 @@
 # Curious Reader Drag Into Place
 ## Test Specification
 
-**Version:** 0.2.0  
+**Version:** 0.2.1  
 **Status:** Draft  
 **Last updated:** 2026-09-08  
 **Author:** GitHub Copilot  
@@ -124,7 +124,7 @@ Capture each `postMessage` call. Parse the JSON string, verify exactly one envel
 
 ### TS-E2E-01 Browser development mode
 
-Run the application in an HTTP development server. Complete one puzzle using pointer and keyboard-equivalent interaction. Verify visible states, focus, persistence, and browser console cleanliness.
+Run the application in an HTTP development server. Verify that clicking or keyboard-activating a tile does not place it, then complete one puzzle by dragging tiles into their correct slots. Verify visible states, focus, persistence, and browser console cleanliness.
 
 ### TS-E2E-02 Direct file-origin launch
 
@@ -240,5 +240,6 @@ When an approved task changes coverage, update test IDs, fixtures, expected outc
 
 ## Spec Change Log
 
+2026-09-08 — GitHub Copilot — Added regression coverage confirming click and keyboard activation cannot place letters and drag placement remains required.
 2026-09-08 — GitHub Copilot — Added validation and end-to-end coverage for the downloaded brief's English word schema, foils, hints, media feedback, and moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial test specification for the Curious Reader Drag Into Place game.

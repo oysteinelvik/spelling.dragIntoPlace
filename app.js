@@ -135,38 +135,50 @@ function addTile(tileData) {
   tile.type = 'button'; tile.className = `tile${tileData.foil ? ' foil' : ''}`; tile.textContent = tileData.value.toUpperCase();
   tile.dataset.id = tileData.id; tile.dataset.value = tileData.value; tile.dataset.index = tileData.index; tile.dataset.foil = tileData.foil;
   tile.setAttribute('aria-label', `${tileData.foil ? 'Foil' : 'Letter'} ${tileData.value}`);
-  tile.addEventListener('click', () => selectTile(tile));
   tile.addEventListener('pointerdown', (event) => beginDrag(event, tile));
-  tile.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectTile(tile); } });
   $('tile-bank').appendChild(tile);
   if (state.moving) requestAnimationFrame(() => tile.classList.add('moving'));
-}
-
-function selectTile(tile) {
-  const target = tile.dataset.foil === 'true'
-    ? state.placements.findIndex((placement) => !placement)
-    : state.puzzle.letters.findIndex((letter, index) => letter === tile.dataset.value && !state.placements[index]);
-  if (target < 0) return;
-  placeTile(tile, target);
 }
 
 function beginDrag(event, tile) {
   if (tile.classList.contains('locked') || tile.classList.contains('gone')) return;
   tile.setPointerCapture?.(event.pointerId);
   tile.classList.add('stopped');
+  let moved = false;
   const move = (moveEvent) => {
+    moved = moved || Math.hypot(moveEvent.clientX - event.clientX, moveEvent.clientY - event.clientY) > 8;
     tile.style.transform = `translate(${moveEvent.clientX - event.clientX}px, ${moveEvent.clientY - event.clientY}px)`;
   };
   const end = (endEvent) => {
     tile.releasePointerCapture?.(event.pointerId);
     tile.removeEventListener('pointermove', move);
     tile.removeEventListener('pointerup', end);
+    tile.removeEventListener('pointercancel', cancel);
     tile.style.transform = '';
-    const target = document.elementFromPoint(endEvent.clientX, endEvent.clientY)?.closest('.slot');
+    if (!moved) return;
+    const target = findDropSlot(endEvent.clientX, endEvent.clientY);
     placeTile(tile, target ? Number(target.dataset.slot) : -1);
+  };
+  const cancel = () => {
+    tile.releasePointerCapture?.(event.pointerId);
+    tile.removeEventListener('pointermove', move);
+    tile.removeEventListener('pointerup', end);
+    tile.removeEventListener('pointercancel', cancel);
+    tile.style.transform = '';
+    returnToBank(tile);
   };
   tile.addEventListener('pointermove', move);
   tile.addEventListener('pointerup', end);
+  tile.addEventListener('pointercancel', cancel);
+}
+
+function findDropSlot(clientX, clientY) {
+  const hit = document.elementFromPoint(clientX, clientY)?.closest('.slot');
+  if (hit) return hit;
+  return [...document.querySelectorAll('.slot')].find((slot) => {
+    const rect = slot.getBoundingClientRect();
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  });
 }
 
 function placeTile(tile, slotIndex) {
@@ -184,13 +196,17 @@ function placeTile(tile, slotIndex) {
   }
   if (value !== expected) {
     setFeedback('Almost. Try another space.', 'bad'); speak('try again', 190);
-    const position = boundedPosition(tile); tile.style.position = 'relative'; tile.style.left = `${position.left / 4}px`; tile.style.top = `${position.top / 4}px`;
+    tile.style.position = '';
+    tile.style.left = '';
+    tile.style.top = '';
+    tile.classList.add('wrong-drop');
+    setTimeout(() => tile.classList.remove('wrong-drop'), 300);
     emit('user_sessions_data', { type: 'incorrect_letter', lang, level_id: state.puzzle.level_id });
     return;
   }
   state.placements[slotIndex] = value;
-  tile.classList.add('locked'); tile.disabled = true;
   const slot = document.querySelector(`.slot[data-slot="${slotIndex}"]`); slot.textContent = value.toUpperCase(); slot.classList.add('filled'); slot.setAttribute('aria-label', `Correct letter ${value}`);
+  tile.remove();
   setFeedback('Yes! That letter belongs there.', 'good'); speak(value, 530 + slotIndex * 70);
   emit('user_sessions_data', { type: 'letter_placed', lang, level_id: state.puzzle.level_id, position: slotIndex + 1 });
   if (state.placements.every(Boolean)) completePuzzle();

@@ -1,7 +1,7 @@
 # Curious Reader Drag Into Place
 ## User Interface Specification
 
-**Version:** 0.2.0  
+**Version:** 0.2.1  
 **Status:** Draft  
 **Last updated:** 2026-09-08  
 **Author:** GitHub Copilot  
@@ -168,8 +168,8 @@ The session completion view shows a concise result: puzzles completed, score whe
 
 ## 6. Interaction Rules
 
-- Pointer and touch dragging must have an equivalent tap/select path where practical.
-- Keyboard QA mode must support focus, selection, placement, and activation of primary controls.
+- Pointer and touch dragging are the only placement mechanism; tapping or keyboard activation of a tile must not place it.
+- Keyboard QA mode must support focus and activation of non-placement controls, while tile placement remains drag-only.
 - Focus must remain visible and must not be lost after an incorrect action.
 - Back/exit behavior must preserve already-completed progress.
 - Double activation of Continue must not advance two puzzles.
@@ -223,5 +223,6 @@ UI changes must identify the affected state IDs, visibility rules, and Gherkin c
 
 ## Spec Change Log
 
+2026-09-08 — GitHub Copilot — Updated interaction rules so letters are accepted only when dragged into the correct answer slot.
 2026-09-08 — GitHub Copilot — Aligned UI states and interaction criteria with the downloaded brief's word image, foils, hint strip, media feedback, and bounded moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial user interface specification for the Curious Reader Drag Into Place game.

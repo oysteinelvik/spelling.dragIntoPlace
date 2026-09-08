@@ -1,7 +1,7 @@
 # Curious Reader Drag Into Place
 ## Development Specification
 
-**Version:** 0.2.0  
+**Version:** 0.2.1  
 **Status:** Draft  
 **Last updated:** 2026-09-08  
 **Author:** GitHub Copilot  
@@ -95,6 +95,7 @@ Supported launch parameters:
 - Represent an immutable puzzle definition separately from mutable session state.
 - Track placed tiles, remaining target letters, active foils, score, attempts, completion, and emitted milestones.
 - Accept a tile only into an empty valid slot.
+- Accept a tile only after a pointer drag ends inside that slot; click and keyboard activation must not place a tile.
 - Prevent duplicate placement of the same tile instance.
 - Mark correct placement immediately, lock the letter, play positive feedback, and pronounce the letter in context.
 - Return an incorrectly placed target letter to a random bounded location.
@@ -318,5 +319,6 @@ No implementation lessons recorded yet. Add raw discoveries during development; 
 
 ## Spec Change Log
 
+2026-09-08 — GitHub Copilot — Restricted puzzle placement to pointer drag-and-drop into the correct slot and removed click/keyboard placement behavior.
 2026-09-08 — GitHub Copilot — Aligned the engineering specification with the downloaded brief's English word schema, foils, hints, media feedback, and moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial engineering specification for the Curious Reader Drag Into Place game.
