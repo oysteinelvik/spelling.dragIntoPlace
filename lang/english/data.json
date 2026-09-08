@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "lang": "english",
+  "display_name": "English",
+  "puzzles": [
+    {
+      "level_id": 1,
+      "target_word": "cat",
+      "letters": ["c", "a", "t"],
+      "foils": ["b", "m"],
+      "image": "cat",
+      "hint_image": "cat-hint",
+      "word_audio": "cat",
+      "letter_audio": ["c", "a", "t"]
+    },
+    {
+      "level_id": 2,
+      "target_word": "sun",
+      "letters": ["s", "u", "n"],
+      "foils": ["r", "p"],
+      "image": "sun",
+      "hint_image": "sun-hint",
+      "word_audio": "sun",
+      "letter_audio": ["s", "u", "n"]
+    },
+    {
+      "level_id": 3,
+      "target_word": "fish",
+      "letters": ["f", "i", "s", "h"],
+      "foils": ["t", "m"],
+      "image": "fish",
+      "hint_image": "fish-hint",
+      "word_audio": "fish",
+      "letter_audio": ["f", "i", "s", "h"]
+    }
+  ]
+}

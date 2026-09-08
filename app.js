@@ -1,0 +1,233 @@
+const IS_FILE_ORIGIN = window.location.protocol === 'file:';
+const params = new URLSearchParams(window.location.search);
+const lang = params.get('cr_lang') || 'english';
+const userId = params.get('cr_user_id') || '';
+const storageKey = 'drag-into-place-progress-v1';
+const SUB_APP_ID = 'drag-into-place';
+
+const state = {
+  content: null,
+  puzzleIndex: 0,
+  puzzle: null,
+  placements: [],
+  activeTiles: [],
+  hints: [],
+  moving: false,
+  completed: 0,
+  sessionEventSent: false,
+  completionEventSent: false
+};
+
+const $ = (id) => document.getElementById(id);
+const views = { loading: $('loading'), game: $('game'), complete: $('complete'), error: $('error') };
+
+function showView(name) {
+  Object.entries(views).forEach(([key, element]) => { element.hidden = key !== name; });
+}
+
+function uuidv4() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'));
+  return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10).join('')}`;
+}
+
+function emit(collection, data, options) {
+  try {
+    if (typeof window.ReactNativeWebView?.postMessage !== 'function') return;
+    const payload = {
+      payload_id: uuidv4(), cr_user_id: userId, sub_app_id: SUB_APP_ID,
+      payload_version: 1, collection, timestamp: new Date().toISOString(), data
+    };
+    if (collection === 'summary_data') payload.options = options || {};
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'cr_event', payload }));
+  } catch (_) { /* Reporting never interrupts play. */ }
+}
+
+function loadText(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = () => (xhr.status === 0 || xhr.status === 200) ? resolve(xhr.responseText) : reject(new Error(`XHR ${xhr.status}`));
+    xhr.onerror = () => reject(new Error('Local content could not be loaded'));
+    xhr.send();
+  });
+}
+
+async function loadContent() {
+  const url = `./lang/${encodeURIComponent(lang)}/data.json`;
+  const raw = IS_FILE_ORIGIN ? await loadText(url) : await (await fetch(url)).text();
+  const parsed = JSON.parse(raw);
+  validateContent(parsed);
+  return parsed;
+}
+
+function validateContent(content) {
+  if (content.schema_version !== 1 || !Array.isArray(content.puzzles) || content.lang !== 'english') throw new Error('Unsupported content');
+  const ids = new Set();
+  content.puzzles.forEach((puzzle) => {
+    if (!Number.isInteger(puzzle.level_id) || ids.has(puzzle.level_id) || !/^[a-z]+$/.test(puzzle.target_word)) throw new Error('Invalid level');
+    ids.add(puzzle.level_id);
+    if (!Array.isArray(puzzle.letters) || puzzle.letters.join('') !== puzzle.target_word || !Array.isArray(puzzle.foils)) throw new Error('Invalid letters');
+    if ([...puzzle.letters, ...puzzle.foils].some((letter) => !/^[a-z]$/.test(letter))) throw new Error('Invalid alphabet');
+  });
+}
+
+function readProgress() {
+  try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (_) { return {}; }
+}
+
+function saveProgress() {
+  try { localStorage.setItem(storageKey, JSON.stringify({ completed: state.completed, puzzleIndex: state.puzzleIndex })); } catch (_) { /* In-memory fallback. */ }
+}
+
+function speak(text, tone = 520) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.frequency.value = tone;
+    gain.gain.setValueAtTime(.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.09, context.currentTime + .02);
+    gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .18);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(); oscillator.stop(context.currentTime + .2);
+  } catch (_) { /* Audio is optional. */ }
+  $('feedback').dataset.lastSpoken = text;
+}
+
+function boundedPosition(tile) {
+  const bank = $('tile-bank').getBoundingClientRect();
+  const width = tile.offsetWidth || 60;
+  const height = tile.offsetHeight || 70;
+  return { left: Math.max(0, Math.random() * Math.max(0, bank.width - width)), top: Math.max(0, Math.random() * Math.max(0, bank.height - height)) };
+}
+
+function setFeedback(message, type = '') {
+  const feedback = $('feedback');
+  feedback.textContent = message;
+  feedback.className = `feedback ${type}`;
+}
+
+function renderPuzzle() {
+  const puzzle = state.puzzle;
+  state.placements = Array(puzzle.letters.length).fill(null);
+  state.hints = Array(puzzle.letters.length).fill(false);
+  state.activeTiles = [...puzzle.letters.map((letter, index) => ({ id: `letter-${index}`, value: letter, index, foil: false })), ...puzzle.foils.map((letter, index) => ({ id: `foil-${index}`, value: letter, index, foil: true }))].sort(() => Math.random() - .5);
+  $('word-prompt').textContent = `Spell ${puzzle.target_word.length} letters`;
+  $('clue-art').textContent = puzzle.target_word === 'cat' ? '🐱' : puzzle.target_word === 'sun' ? '☀️' : '🐟';
+  $('clue-art').setAttribute('aria-label', `Picture clue for ${puzzle.target_word}`);
+  $('answer-slots').innerHTML = puzzle.letters.map((_, index) => `<div class="slot" data-slot="${index}" tabindex="0" aria-label="Empty letter position ${index + 1}"></div>`).join('');
+  $('hints').innerHTML = puzzle.letters.map((letter, index) => `<div class="hint" data-hint="${index}" aria-label="Hint for position ${index + 1}">${state.hints[index] ? letter : '·'}</div>`).join('');
+  $('tile-bank').innerHTML = '';
+  state.activeTiles.forEach((tile) => addTile(tile));
+  $('next-word').hidden = true;
+  setFeedback('');
+  updateProgress();
+}
+
+function addTile(tileData) {
+  const tile = document.createElement('button');
+  tile.type = 'button'; tile.className = `tile${tileData.foil ? ' foil' : ''}`; tile.textContent = tileData.value.toUpperCase();
+  tile.dataset.id = tileData.id; tile.dataset.value = tileData.value; tile.dataset.index = tileData.index; tile.dataset.foil = tileData.foil;
+  tile.setAttribute('aria-label', `${tileData.foil ? 'Foil' : 'Letter'} ${tileData.value}`);
+  tile.addEventListener('click', () => selectTile(tile));
+  tile.addEventListener('pointerdown', (event) => beginDrag(event, tile));
+  tile.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectTile(tile); } });
+  $('tile-bank').appendChild(tile);
+  if (state.moving) requestAnimationFrame(() => tile.classList.add('moving'));
+}
+
+function selectTile(tile) {
+  const target = tile.dataset.foil === 'true'
+    ? state.placements.findIndex((placement) => !placement)
+    : state.puzzle.letters.findIndex((letter, index) => letter === tile.dataset.value && !state.placements[index]);
+  if (target < 0) return;
+  placeTile(tile, target);
+}
+
+function beginDrag(event, tile) {
+  if (tile.classList.contains('locked') || tile.classList.contains('gone')) return;
+  tile.setPointerCapture?.(event.pointerId);
+  tile.classList.add('stopped');
+  const move = (moveEvent) => {
+    tile.style.transform = `translate(${moveEvent.clientX - event.clientX}px, ${moveEvent.clientY - event.clientY}px)`;
+  };
+  const end = (endEvent) => {
+    tile.releasePointerCapture?.(event.pointerId);
+    tile.removeEventListener('pointermove', move);
+    tile.removeEventListener('pointerup', end);
+    tile.style.transform = '';
+    const target = document.elementFromPoint(endEvent.clientX, endEvent.clientY)?.closest('.slot');
+    placeTile(tile, target ? Number(target.dataset.slot) : -1);
+  };
+  tile.addEventListener('pointermove', move);
+  tile.addEventListener('pointerup', end);
+}
+
+function placeTile(tile, slotIndex) {
+  if (slotIndex < 0 || state.placements[slotIndex]) { returnToBank(tile); return; }
+  const value = tile.dataset.value;
+  const expected = state.puzzle.letters[slotIndex];
+  if (tile.dataset.foil === 'true') {
+    state.hints[slotIndex] = true;
+    tile.classList.add('gone');
+    document.querySelector(`.hint[data-hint="${slotIndex}"]`).classList.add('revealed');
+    document.querySelector(`.hint[data-hint="${slotIndex}"]`).textContent = expected.toUpperCase();
+    setFeedback('Not that one. Here is a hint.', 'bad'); speak('try again', 190);
+    emit('user_sessions_data', { type: 'foil_selected', lang, level_id: state.puzzle.level_id });
+    return;
+  }
+  if (value !== expected) {
+    setFeedback('Almost. Try another space.', 'bad'); speak('try again', 190);
+    const position = boundedPosition(tile); tile.style.position = 'relative'; tile.style.left = `${position.left / 4}px`; tile.style.top = `${position.top / 4}px`;
+    emit('user_sessions_data', { type: 'incorrect_letter', lang, level_id: state.puzzle.level_id });
+    return;
+  }
+  state.placements[slotIndex] = value;
+  tile.classList.add('locked'); tile.disabled = true;
+  const slot = document.querySelector(`.slot[data-slot="${slotIndex}"]`); slot.textContent = value.toUpperCase(); slot.classList.add('filled'); slot.setAttribute('aria-label', `Correct letter ${value}`);
+  setFeedback('Yes! That letter belongs there.', 'good'); speak(value, 530 + slotIndex * 70);
+  emit('user_sessions_data', { type: 'letter_placed', lang, level_id: state.puzzle.level_id, position: slotIndex + 1 });
+  if (state.placements.every(Boolean)) completePuzzle();
+}
+
+function returnToBank(tile) { tile.classList.remove('stopped'); tile.style.transform = ''; }
+
+function completePuzzle() {
+  if (state.completionEventSent) return;
+  state.completionEventSent = true; state.completed += 1; saveProgress(); speak(state.puzzle.target_word, 740); setFeedback(`You spelled ${state.puzzle.target_word}!`, 'good');
+  emit('user_sessions_data', { type: 'level_completed', lang, level_id: state.puzzle.level_id, score: state.puzzle.letters.length, max_score: state.puzzle.letters.length });
+  setTimeout(() => { $('complete-title').textContent = state.puzzle.target_word.toUpperCase(); $('complete-copy').textContent = 'A new word is ready when you are.'; showView('complete'); }, 650);
+}
+
+function nextPuzzle() {
+  state.puzzleIndex = (state.puzzleIndex + 1) % state.content.puzzles.length; state.puzzle = state.content.puzzles[state.puzzleIndex]; state.completionEventSent = false; renderPuzzle(); showView('game');
+}
+
+function updateProgress() {
+  const total = state.content?.puzzles.length || 1; $('progress-label').textContent = `Word ${state.puzzleIndex + 1} of ${total}`; $('progress-bar').style.width = `${((state.puzzleIndex + 1) / total) * 100}%`;
+}
+
+function setupEvents() {
+  $('next-word').addEventListener('click', nextPuzzle); $('complete-next').addEventListener('click', nextPuzzle); $('retry').addEventListener('click', boot);
+  $('speak-word').addEventListener('click', () => speak(state.puzzle?.target_word || 'word', 740));
+  $('moving-mode').addEventListener('change', (event) => { state.moving = event.target.checked; renderPuzzle(); });
+  $('answer-slots').addEventListener('pointerover', (event) => event.target.closest('.slot')?.classList.add('over'));
+  $('answer-slots').addEventListener('pointerout', (event) => event.target.closest('.slot')?.classList.remove('over'));
+}
+
+async function boot() {
+  showView('loading');
+  try {
+    state.content = await loadContent(); const saved = readProgress(); state.puzzleIndex = Number.isInteger(saved.puzzleIndex) ? saved.puzzleIndex % state.content.puzzles.length : 0; state.completed = Number(saved.completed) || 0; state.puzzle = state.content.puzzles[state.puzzleIndex];
+    if (!state.sessionEventSent) { emit('user_sessions_data', { type: 'session_started', lang }); state.sessionEventSent = true; }
+    renderPuzzle(); showView('game');
+  } catch (error) { $('error-copy').textContent = error.message; showView('error'); }
+}
+
+setupEvents(); boot();

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Word Drift | Drag Into Place</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main id="app" class="app-shell" aria-live="polite">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Curious Reader</p>
+        <h1>Word Drift</h1>
+      </div>
+      <div class="progress-wrap" aria-label="Progress">
+        <span id="progress-label">Word 1</span>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      </div>
+    </header>
+
+    <section id="loading" class="panel state-panel">
+      <div class="loader-orbit" aria-hidden="true"></div>
+      <h2>Gathering a word</h2>
+      <p>Loading your picture clues.</p>
+    </section>
+
+    <section id="game" class="game-layout" hidden>
+      <aside class="clue-panel panel">
+        <div class="clue-art" id="clue-art" role="img" aria-label="Picture clue">🐱</div>
+        <p class="eyebrow">Picture clue</p>
+        <h2 id="word-prompt">Can you spell it?</h2>
+        <button id="speak-word" class="icon-button" type="button" title="Hear the word" aria-label="Hear the word">🔊 <span>Hear word</span></button>
+      </aside>
+
+      <section class="play-panel">
+        <div id="feedback" class="feedback" role="status"></div>
+        <div id="answer-slots" class="answer-slots" aria-label="Answer slots"></div>
+        <div id="hints" class="hints" aria-label="Letter hints"></div>
+        <div class="tile-header">
+          <div>
+            <p class="eyebrow">Letter stream</p>
+            <p class="helper">Drag a letter into its matching space.</p>
+          </div>
+          <label class="mode-toggle"><input id="moving-mode" type="checkbox"><span class="toggle-track"></span><span>Moving mode</span></label>
+        </div>
+        <div id="tile-bank" class="tile-bank" aria-label="Available letters"></div>
+        <button id="next-word" class="primary-button" type="button" hidden>Next word <span aria-hidden="true">→</span></button>
+      </section>
+    </section>
+
+    <section id="complete" class="panel state-panel" hidden>
+      <div class="complete-mark" aria-hidden="true">✦</div>
+      <p class="eyebrow">Nicely done</p>
+      <h2 id="complete-title">You spelled it!</h2>
+      <p id="complete-copy">Your word is complete.</p>
+      <button id="complete-next" class="primary-button" type="button">Next word <span aria-hidden="true">→</span></button>
+    </section>
+
+    <section id="error" class="panel state-panel" hidden>
+      <p class="eyebrow">A small hiccup</p>
+      <h2>We couldn't load the word set.</h2>
+      <p id="error-copy">Check the local content files and try again.</p>
+      <button id="retry" class="primary-button" type="button">Try again</button>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>
