@@ -11,7 +11,8 @@
       "image": "cat",
       "hint_image": "cat-hint",
       "word_audio": "cat",
-      "letter_audio": ["c", "a", "t"]
+      "letter_audio": ["c", "a", "t"],
+      "emoji": "🐱"
     },
     {
       "level_id": 2,
@@ -21,7 +22,8 @@
       "image": "sun",
       "hint_image": "sun-hint",
       "word_audio": "sun",
-      "letter_audio": ["s", "u", "n"]
+      "letter_audio": ["s", "u", "n"],
+      "emoji": "☀️"
     },
     {
       "level_id": 3,
@@ -31,7 +33,85 @@
       "image": "fish",
       "hint_image": "fish-hint",
       "word_audio": "fish",
-      "letter_audio": ["f", "i", "s", "h"]
+      "letter_audio": ["f", "i", "s", "h"],
+      "emoji": "🐟"
+    },
+    {
+      "level_id": 4,
+      "target_word": "cup",
+      "letters": ["c", "u", "p"],
+      "foils": ["b", "s"],
+      "image": "cup",
+      "hint_image": "cup-hint",
+      "word_audio": "cup",
+      "letter_audio": ["c", "u", "p"],
+      "emoji": "🥛"
+    },
+    {
+      "level_id": 5,
+      "target_word": "hat",
+      "letters": ["h", "a", "t"],
+      "foils": ["c", "m"],
+      "image": "hat",
+      "hint_image": "hat-hint",
+      "word_audio": "hat",
+      "letter_audio": ["h", "a", "t"],
+      "emoji": "🎩"
+    },
+    {
+      "level_id": 6,
+      "target_word": "box",
+      "letters": ["b", "o", "x"],
+      "foils": ["t", "s"],
+      "image": "box",
+      "hint_image": "box-hint",
+      "word_audio": "box",
+      "letter_audio": ["b", "o", "x"],
+      "emoji": "📦"
+    },
+    {
+      "level_id": 7,
+      "target_word": "bag",
+      "letters": ["b", "a", "g"],
+      "foils": ["d", "r"],
+      "image": "bag",
+      "hint_image": "bag-hint",
+      "word_audio": "bag",
+      "letter_audio": ["b", "a", "g"],
+      "emoji": "👜"
+    },
+    {
+      "level_id": 8,
+      "target_word": "pen",
+      "letters": ["p", "e", "n"],
+      "foils": ["t", "l"],
+      "image": "pen",
+      "hint_image": "pen-hint",
+      "word_audio": "pen",
+      "letter_audio": ["p", "e", "n"],
+      "emoji": "✒️"
+    },
+    {
+      "level_id": 9,
+      "target_word": "key",
+      "letters": ["k", "e", "y"],
+      "foils": ["r", "s"],
+      "image": "key",
+      "hint_image": "key-hint",
+      "word_audio": "key",
+      "letter_audio": ["k", "e", "y"],
+      "emoji": "🔑"
+    },
+    {
+      "level_id": 10,
+      "target_word": "bed",
+      "letters": ["b", "e", "d"],
+      "foils": ["h", "s"],
+      "image": "bed",
+      "hint_image": "bed-hint",
+      "word_audio": "bed",
+      "letter_audio": ["b", "e", "d"],
+      "emoji": "🛏️"
     }
   ]
 }

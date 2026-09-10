@@ -119,7 +119,7 @@ function renderPuzzle() {
   state.hints = Array(puzzle.letters.length).fill(false);
   state.activeTiles = [...puzzle.letters.map((letter, index) => ({ id: `letter-${index}`, value: letter, index, foil: false })), ...puzzle.foils.map((letter, index) => ({ id: `foil-${index}`, value: letter, index, foil: true }))].sort(() => Math.random() - .5);
   $('word-prompt').textContent = `Spell ${puzzle.target_word.length} letters`;
-  $('clue-art').textContent = puzzle.target_word === 'cat' ? '🐱' : puzzle.target_word === 'sun' ? '☀️' : '🐟';
+  $('clue-art').textContent = puzzle.emoji || '🧩';
   $('clue-art').setAttribute('aria-label', `Picture clue for ${puzzle.target_word}`);
   $('answer-slots').innerHTML = puzzle.letters.map((_, index) => `<div class="slot" data-slot="${index}" tabindex="0" aria-label="Empty letter position ${index + 1}"></div>`).join('');
   $('hints').innerHTML = puzzle.letters.map((letter, index) => `<div class="hint" data-hint="${index}" aria-label="Hint for position ${index + 1}">${state.hints[index] ? letter : '·'}</div>`).join('');
