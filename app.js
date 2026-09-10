@@ -191,6 +191,8 @@ function addTile(tileData) {
   if (state.moving) {
     tile.style.left = '12px';
     tile.style.top = `${randomMovingTop(tile)}px`;
+    tile.style.animationDuration = `${(4 + Math.random() * 3).toFixed(2)}s`;
+    tile.style.animationDelay = `-${(Math.random() * 5).toFixed(2)}s`;
     requestAnimationFrame(() => tile.classList.add('moving'));
   } else {
     const spot = randomTilePosition(tile);
@@ -201,6 +203,13 @@ function addTile(tileData) {
 
 function beginDrag(event, tile) {
   if (tile.classList.contains('locked') || tile.classList.contains('gone')) return;
+  if (tile.classList.contains('moving')) {
+    const rect = surfaceRect();
+    const box = tile.getBoundingClientRect();
+    tile.style.left = `${box.left - rect.left}px`;
+    tile.style.top = `${box.top - rect.top}px`;
+    tile.classList.remove('moving');
+  }
   tile.setPointerCapture?.(event.pointerId);
   tile.classList.add('stopped');
   let moved = false;
@@ -217,11 +226,13 @@ function beginDrag(event, tile) {
       const landing = resolveLanding(tile, (parseFloat(tile.style.left) || 0) + (endEvent.clientX - event.clientX), (parseFloat(tile.style.top) || 0) + (endEvent.clientY - event.clientY));
       tile.style.left = `${landing.left}px`;
       tile.style.top = `${landing.top}px`;
+      tile.style.transform = '';
+      const target = findDropSlot(endEvent.clientX, endEvent.clientY);
+      placeTile(tile, target ? Number(target.dataset.slot) : -1);
+      return;
     }
     tile.style.transform = '';
-    if (!moved) return;
-    const target = findDropSlot(endEvent.clientX, endEvent.clientY);
-    placeTile(tile, target ? Number(target.dataset.slot) : -1);
+    returnToBank(tile);
   };
   const cancel = () => {
     tile.releasePointerCapture?.(event.pointerId);
@@ -246,7 +257,7 @@ function findDropSlot(clientX, clientY) {
 }
 
 function placeTile(tile, slotIndex) {
-  if (slotIndex < 0 || state.placements[slotIndex]) { returnToBank(tile); return; }
+  if (slotIndex < 0 || state.placements[slotIndex]) { resumeAfterFailedDrop(tile); return; }
   const value = tile.dataset.value;
   const expected = state.puzzle.letters[slotIndex];
   if (tile.dataset.foil === 'true') {
@@ -260,9 +271,13 @@ function placeTile(tile, slotIndex) {
   }
   if (value !== expected) {
     setFeedback('Almost. Try another space.', 'bad'); speak('try again', 190);
-    const bounce = randomTilePosition(tile);
-    tile.style.left = `${bounce.left}px`;
-    tile.style.top = `${bounce.top}px`;
+    if (state.moving) {
+      resumeAfterFailedDrop(tile);
+    } else {
+      const bounce = randomTilePosition(tile);
+      tile.style.left = `${bounce.left}px`;
+      tile.style.top = `${bounce.top}px`;
+    }
     tile.classList.add('wrong-drop');
     setTimeout(() => tile.classList.remove('wrong-drop'), 300);
     emit('user_sessions_data', { type: 'incorrect_letter', lang, level_id: state.puzzle.level_id });
@@ -277,6 +292,14 @@ function placeTile(tile, slotIndex) {
 }
 
 function returnToBank(tile) { tile.classList.remove('stopped'); }
+
+function resumeAfterFailedDrop(tile) {
+  tile.classList.remove('stopped');
+  if (!state.moving) return;
+  tile.style.animationDuration = `${(4 + Math.random() * 3).toFixed(2)}s`;
+  tile.style.animationDelay = `-${(Math.random() * 5).toFixed(2)}s`;
+  tile.classList.add('moving');
+}
 
 function completePuzzle() {
   if (state.completionEventSent) return;
