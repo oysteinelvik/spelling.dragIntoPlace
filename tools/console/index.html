@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag Into Place — Developer Console</title>
+  <link rel="stylesheet" href="/console.css">
+</head>
+<body>
+  <main class="panel">
+    <h1>Drag Into Place — Developer Console</h1>
+
+    <section class="row">
+      <button id="rebuild" class="action">REBUILD</button>
+      <span class="hint">Regenerates lang/*/data.json from content/words.csv</span>
+    </section>
+
+    <section class="row">
+      <label for="language">Language</label>
+      <select id="language"></select>
+    </section>
+
+    <section class="row">
+      <span class="label">Display</span>
+      <label class="toggle">
+        <input type="checkbox" id="orientation">
+        <span>Portrait</span> / <span>Landscape</span>
+      </label>
+    </section>
+
+    <section class="row">
+      <button id="preview" class="action">PREVIEW</button>
+      <span class="hint">Opens the selected language in a window sized to the display toggle</span>
+    </section>
+
+    <section class="row">
+      <button id="package" class="action primary">MAKE PACKAGE &amp; UPLOAD</button>
+      <span class="hint">Builds engine + language ZIPs, then uploads via MCP if configured</span>
+    </section>
+
+    <h2>Console</h2>
+    <pre id="log" class="log"></pre>
+  </main>
+  <script src="/console.js"></script>
+</body>
+</html>

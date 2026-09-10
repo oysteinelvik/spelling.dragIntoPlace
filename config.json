@@ -1,0 +1,5 @@
+{
+  "engineSlug": "drag-into-place",
+  "engineTitle": "Drag Into Place",
+  "urlTemplate": "https://drag-into-place.example.org/?cr_lang={lang}"
+}

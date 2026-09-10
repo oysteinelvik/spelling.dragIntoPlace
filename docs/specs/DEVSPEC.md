@@ -1,9 +1,9 @@
 # Curious Reader Drag Into Place
 ## Development Specification
 
-**Version:** 0.2.1  
+**Version:** 0.4.0  
 **Status:** Draft  
-**Last updated:** 2026-09-08  
+**Last updated:** 2026-09-10  
 **Author:** GitHub Copilot  
 **Source of behavior:** Product requirements in this project
 
@@ -79,7 +79,8 @@ Supported launch parameters:
       "image": "lang/english/images/cat.png",
       "hint_image": "lang/english/images/cat-hint.png",
       "word_audio": "lang/english/audios/cat.mp3",
-      "letter_audio": ["lang/english/audios/c.mp3", "lang/english/audios/a.mp3", "lang/english/audios/t.mp3"]
+      "letter_audio": ["lang/english/audios/c.mp3", "lang/english/audios/a.mp3", "lang/english/audios/t.mp3"],
+      "emoji": "🐱"
     }
   ]
 }
@@ -136,12 +137,13 @@ Supported launch parameters:
 **Goal:** Provide the brief's advanced interaction as a separately testable mode.
 
 **Tasks:**
-- Move target letters and foils from left to right at a configured speed.
-- Remove each unselected item after a bounded lifetime.
-- Stop an item when tapped so it can be dragged to the answer area.
+- Move target letters and foils from left to right at a configured speed, looping continuously rather than a single pass.
+- Randomize each tile's speed and start offset so multiple items do not move in lockstep.
+- Stop an item permanently on a plain tap (no drag) so it can be dragged to the answer area.
+- Resume continuous movement if a drag ends in a failed drop (wrong letter, or an invalid or already-filled slot).
 - Preserve all bounded-screen and locked-letter constraints from FR-04.
 
-**Exit criterion:** A fixture can enable moving mode, observe items entering and leaving within the configured lifetime, tap one to stop it, and complete a word without off-screen drag placement.
+**Exit criterion:** A fixture can enable moving mode, observe items rolling left to right continuously without freezing or disappearing on their own, tap one to stop it, drag it to an incorrect slot and confirm it resumes rolling, and complete a word without off-screen drag placement.
 
 ### FR-07 Event bridge
 
@@ -229,26 +231,24 @@ Before release, a human reviewer must verify:
 ## 7. Functional Repository Tree
 
 ```text
-specs/                 Versioned project specifications
-src/
-  app/                 Boot, routing, lifecycle, error boundary
-  content/             Schema, loader, validator, fixtures
-  puzzle/              Word, letter, foil, hint, and scoring state machine
-  persistence/         localStorage adapter and migration
-  media/               Audio/image/hint/animation loading and fallbacks
-  reporting/           cr_event bridge and UUID generation
-  ui/                  View components and interaction adapters
-  styles/              Relative CSS and fonts
-public/
-  assets/              Shared assets only
-  lang/                Development language fixtures
-scripts/               Build, validation, packaging, and audit commands
-tests/
-  unit/                Pure module tests
-  integration/         Application and bridge tests
-  e2e/                 Browser and file-origin tests
-  fixtures/             Valid and invalid content/package fixtures
+index.html             Game entry point (engine ZIP root)
+app.js                 Boot, content loading, puzzle state, drag/drop, reporting
+styles.css              Relative CSS for the single-surface layout
+lang/<code>/            Generated per-language content (data.json, audio, images)
+content/words.csv       The word "spreadsheet"; source of truth for lang content
+config.json             Engine slug, title, and URL template used by packaging/upload
+docs/specs/             Versioned project specifications (this document and siblings)
+scripts/
+  getstarted.js          Clean-machine setup entry point
+  build-content.js       Rebuilds lang/*/data.json from content/words.csv
+  build-packages.js      Builds engine + language ZIPs into dist/packages/
+  mcp-upload.js          Optional MCP upload of built packages
+  console-server.js      Local developer console HTTP server
+  lib/zip.js             Dependency-free store-only ZIP writer
+tools/console/           Developer console browser UI (index.html, console.css, console.js)
+dist/packages/           Build output ZIPs (ephemeral, gitignored)
 ```
+
 
 ## 8. Implementation Layout
 
@@ -282,6 +282,14 @@ A clean-machine runbook must provide commands for:
 7. Running the file-origin offline test.
 
 No command may require credentials or network access after dependencies are installed.
+
+Current implementation of this contract (dependency-free Node scripts):
+
+- `npm run getstarted` — clean-machine setup: verifies Node.js 18+, creates `dist/packages/`, and rebuilds `lang/*/data.json` from `content/words.csv`.
+- `npm run console` — local developer console (`http://localhost:4300`) with REBUILD, a built-language dropdown, PREVIEW (opens a portrait/landscape-sized window), MAKE PACKAGE & UPLOAD, and a live console/log pane streamed over server-sent events.
+- `npm run build:content` — rebuilds language content from the spreadsheet CSV standalone.
+- `npm run build:packages` — builds `<engine>-core.zip` and one `<engine>-lang-<langCode>.zip` per language into `dist/packages/` standalone.
+- MCP upload runs only when `CR_MCP_SERVER` and `CR_MCP_TOKEN` are set (see `.env.example`); packaging still succeeds without them, and the upload step is skipped with an explicit message rather than failing.
 
 ## 11. Task Planning Protocol
 
@@ -319,6 +327,8 @@ No implementation lessons recorded yet. Add raw discoveries during development; 
 
 ## Spec Change Log
 
+2026-09-10 — GitHub Copilot — Added the `getstarted` and `console` npm commands, the CSV-based content spreadsheet, a dependency-free ZIP packager, an optional MCP upload step, and updated the build/run contract and repository tree to match.
+2026-09-10 — GitHub Copilot — Updated moving-letter mode to a continuous loop with resume-after-failed-drop and permanent tap-to-stop; added the `emoji` content field used for the picture clue.
 2026-09-08 — GitHub Copilot — Restricted puzzle placement to pointer drag-and-drop into the correct slot and removed click/keyboard placement behavior.
 2026-09-08 — GitHub Copilot — Aligned the engineering specification with the downloaded brief's English word schema, foils, hints, media feedback, and moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial engineering specification for the Curious Reader Drag Into Place game.

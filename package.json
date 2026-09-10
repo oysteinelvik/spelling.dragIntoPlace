@@ -1,0 +1,15 @@
+{
+  "name": "drag-into-place",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Curious Reader Drag Into Place literacy game, build tools, and developer console",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "getstarted": "node scripts/getstarted.js",
+    "console": "node scripts/console-server.js",
+    "build:content": "node scripts/build-content.js",
+    "build:packages": "node scripts/build-packages.js"
+  }
+}

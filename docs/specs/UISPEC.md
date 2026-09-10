@@ -1,9 +1,9 @@
 # Curious Reader Drag Into Place
 ## User Interface Specification
 
-**Version:** 0.2.1  
+**Version:** 0.3.0  
 **Status:** Draft  
-**Last updated:** 2026-09-08  
+**Last updated:** 2026-09-10  
 **Author:** GitHub Copilot  
 **Behavior authority:** Development specification in this project
 
@@ -32,6 +32,8 @@
 The visual direction is warm, bright, and classroom-friendly without relying on a single hue. Use a light neutral canvas, one strong action color, one success color, one correction color, and high-contrast text. Avoid flashing, dense decoration, or visual noise that competes with the target word.
 
 Typography must remain legible at common phone sizes. Text labels should be short. Icons may supplement labels but must not be the only indication of correctness or completion.
+
+Target letters and foils must be visually indistinguishable from each other in the tile area (same color, background, and size). A foil's identity is revealed only through the outcome of an attempted placement, never through styling, so the discrimination exercise is not defeated by appearance.
 
 ## 4. Application States
 
@@ -96,17 +98,15 @@ And the progress summary reflects saved state
 
 ### 5.3 Play
 
-The play view contains, in reading order:
+The play view is a single surface (frame) containing, as overlaid regions rather than a stacked reading order:
 
-1. Session progress and optional exit/back control.
-2. Target image or neutral media placeholder.
-3. Target word slots with clear empty and filled states.
-4. Hint image strip aligned with answer slots when enabled.
-5. Letter and foil tile area with stable tile dimensions.
-6. Optional pronunciation/audio control.
-7. Non-blocking feedback region.
+1. An in-frame status bar spanning the top of the surface, showing session progress. There is no separate page header; the surface is the entire game chrome.
+2. A clue chip anchored to one top corner, containing the picture clue and the hear-word control.
+3. A mode toggle anchored to the opposite top corner.
+4. A centered word area below the status bar containing the feedback message, the answer slots, and the hint row.
+5. A tile layer spanning the full surface, on which every target letter and foil is scattered at a random position that never overlaps the status bar, clue chip, mode toggle, or word area.
 
-The active puzzle must remain visually stable while a tile is dragged. A tile must not change size in a way that shifts neighboring controls. Empty slots must be visually distinct from filled slots. The solution must not be revealed by styling alone.
+The active puzzle must remain visually stable while a tile is dragged. A tile must not change size in a way that shifts neighboring controls. Empty slots must be visually distinct from filled slots. The solution must not be revealed by styling alone. A tile released outside a valid slot, or nudged away from a reserved chrome region, must never become hidden or unreachable behind another element.
 
 **Acceptance criteria:**
 
@@ -148,7 +148,7 @@ Target-letter errors return the letter to a random location inside the bounded p
 
 ### 5.5 Moving-letter mode
 
-In the advanced mode, target letters and foils enter from the left, travel toward the right, and disappear after a configured lifetime. Tapping an item stops its motion and makes it draggable. The answer area and locked-letter behavior remain the same as the standard mode.
+In the advanced mode, target letters and foils enter from the left, travel toward the right, and loop continuously; they do not expire or disappear on their own. Each item's speed and timing are varied so multiple items do not move in lockstep. A plain tap with no drag stops an item permanently, making it draggable like a standard-mode tile. If a stopped item is dragged and the drop fails (wrong letter, or an invalid or already-filled slot), the item resumes its continuous rolling motion rather than remaining frozen in place. The answer area and locked-letter behavior remain the same as the standard mode.
 
 ### 5.5 Puzzle complete
 
@@ -223,6 +223,7 @@ UI changes must identify the affected state IDs, visibility rules, and Gherkin c
 
 ## Spec Change Log
 
+2026-09-10 — GitHub Copilot — Replaced the stacked play-view layout description with the single-surface design (in-frame status bar, corner clue chip, corner mode toggle, centered word area, scattered tile layer); updated moving-letter mode to continuous looping with tap-to-stop and resume-after-failed-drop; added a rule requiring foils to be visually indistinguishable from real letters.
 2026-09-08 — GitHub Copilot — Updated interaction rules so letters are accepted only when dragged into the correct answer slot.
 2026-09-08 — GitHub Copilot — Aligned UI states and interaction criteria with the downloaded brief's word image, foils, hint strip, media feedback, and bounded moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial user interface specification for the Curious Reader Drag Into Place game.

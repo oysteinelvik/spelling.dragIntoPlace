@@ -1,9 +1,9 @@
 # Curious Reader Drag Into Place
 ## Test Specification
 
-**Version:** 0.2.1  
+**Version:** 0.3.0  
 **Status:** Draft  
-**Last updated:** 2026-09-08  
+**Last updated:** 2026-09-10  
 **Author:** GitHub Copilot  
 **Verification target:** Product, development, and UI specifications in this project
 
@@ -152,7 +152,11 @@ Drop a foil into an answer slot. Confirm negative feedback, foil disappearance, 
 
 ### TS-E2E-08 Moving-letter mode
 
-Enable advanced moving mode. Confirm target letters and foils enter from the left, move right, expire within the configured lifetime, stop on tap, remain draggable after stopping, and cannot be placed outside the viewport.
+Enable advanced moving mode. Confirm target letters and foils enter from the left, move right, and loop continuously without freezing or disappearing on their own. Confirm a plain tap with no drag stops an item permanently. Confirm a stopped item dragged to an incorrect or occupied slot resumes continuous rolling. Confirm items cannot be placed outside the viewport.
+
+### TS-E2E-09 Scattered layout and foil indistinguishability
+
+On the single-surface layout, confirm scattered letters never render underneath or overlapping the status bar, clue chip, mode toggle, or word area, including after a wrong-letter bounce or a manually dragged release. Confirm target letters and foils are visually identical (same color, background, size) before any placement attempt.
 
 ## 7. Packaging and Static Audit Tests
 
@@ -216,7 +220,7 @@ From a clean checkout and pinned dependency install, run the documented build an
 | Media resilience | TS-UNIT-07, TS-INT-05, TS-E2E-06 |
 | Brief-specific media, foils, hints, and moving mode | TS-UNIT-07A, TS-E2E-07, TS-E2E-08 |
 | Event reporting | TS-UNIT-08, TS-UNIT-09, TS-INT-06 |
-| UI states and accessibility | TS-E2E-01, TS-E2E-04, TS-E2E-06, TS-MAN-01 through TS-MAN-05 |
+| UI states and accessibility | TS-E2E-01, TS-E2E-04, TS-E2E-06, TS-E2E-09, TS-MAN-01 through TS-MAN-05 |
 | Packaging and release | TS-PKG-01 through TS-PKG-06, TS-MAN-07 |
 
 ## 11. Test Execution Order
@@ -240,6 +244,7 @@ When an approved task changes coverage, update test IDs, fixtures, expected outc
 
 ## Spec Change Log
 
+2026-09-10 — GitHub Copilot — Rewrote moving-letter mode coverage for continuous looping, tap-to-stop, and resume-after-failed-drop; added TS-E2E-09 for the scattered single-surface layout and foil indistinguishability.
 2026-09-08 — GitHub Copilot — Added regression coverage confirming click and keyboard activation cannot place letters and drag placement remains required.
 2026-09-08 — GitHub Copilot — Added validation and end-to-end coverage for the downloaded brief's English word schema, foils, hints, media feedback, and moving-letter mode.
 2026-09-08 — GitHub Copilot — Created the initial test specification for the Curious Reader Drag Into Place game.

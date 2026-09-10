@@ -6,111 +6,223 @@
     {
       "level_id": 1,
       "target_word": "cat",
-      "letters": ["c", "a", "t"],
-      "foils": ["b", "m"],
-      "image": "cat",
-      "hint_image": "cat-hint",
-      "word_audio": "cat",
-      "letter_audio": ["c", "a", "t"],
+      "letters": [
+        "c",
+        "a",
+        "t"
+      ],
+      "foils": [
+        "b",
+        "m"
+      ],
+      "image": "lang/english/images/cat.png",
+      "hint_image": "lang/english/images/cat-hint.png",
+      "word_audio": "lang/english/audios/cat.mp3",
+      "letter_audio": [
+        "lang/english/audios/c.mp3",
+        "lang/english/audios/a.mp3",
+        "lang/english/audios/t.mp3"
+      ],
       "emoji": "🐱"
     },
     {
       "level_id": 2,
       "target_word": "sun",
-      "letters": ["s", "u", "n"],
-      "foils": ["r", "p"],
-      "image": "sun",
-      "hint_image": "sun-hint",
-      "word_audio": "sun",
-      "letter_audio": ["s", "u", "n"],
+      "letters": [
+        "s",
+        "u",
+        "n"
+      ],
+      "foils": [
+        "r",
+        "p"
+      ],
+      "image": "lang/english/images/sun.png",
+      "hint_image": "lang/english/images/sun-hint.png",
+      "word_audio": "lang/english/audios/sun.mp3",
+      "letter_audio": [
+        "lang/english/audios/s.mp3",
+        "lang/english/audios/u.mp3",
+        "lang/english/audios/n.mp3"
+      ],
       "emoji": "☀️"
     },
     {
       "level_id": 3,
       "target_word": "fish",
-      "letters": ["f", "i", "s", "h"],
-      "foils": ["t", "m"],
-      "image": "fish",
-      "hint_image": "fish-hint",
-      "word_audio": "fish",
-      "letter_audio": ["f", "i", "s", "h"],
+      "letters": [
+        "f",
+        "i",
+        "s",
+        "h"
+      ],
+      "foils": [
+        "t",
+        "m"
+      ],
+      "image": "lang/english/images/fish.png",
+      "hint_image": "lang/english/images/fish-hint.png",
+      "word_audio": "lang/english/audios/fish.mp3",
+      "letter_audio": [
+        "lang/english/audios/f.mp3",
+        "lang/english/audios/i.mp3",
+        "lang/english/audios/s.mp3",
+        "lang/english/audios/h.mp3"
+      ],
       "emoji": "🐟"
     },
     {
       "level_id": 4,
       "target_word": "cup",
-      "letters": ["c", "u", "p"],
-      "foils": ["b", "s"],
-      "image": "cup",
-      "hint_image": "cup-hint",
-      "word_audio": "cup",
-      "letter_audio": ["c", "u", "p"],
+      "letters": [
+        "c",
+        "u",
+        "p"
+      ],
+      "foils": [
+        "b",
+        "s"
+      ],
+      "image": "lang/english/images/cup.png",
+      "hint_image": "lang/english/images/cup-hint.png",
+      "word_audio": "lang/english/audios/cup.mp3",
+      "letter_audio": [
+        "lang/english/audios/c.mp3",
+        "lang/english/audios/u.mp3",
+        "lang/english/audios/p.mp3"
+      ],
       "emoji": "🥛"
     },
     {
       "level_id": 5,
       "target_word": "hat",
-      "letters": ["h", "a", "t"],
-      "foils": ["c", "m"],
-      "image": "hat",
-      "hint_image": "hat-hint",
-      "word_audio": "hat",
-      "letter_audio": ["h", "a", "t"],
+      "letters": [
+        "h",
+        "a",
+        "t"
+      ],
+      "foils": [
+        "c",
+        "m"
+      ],
+      "image": "lang/english/images/hat.png",
+      "hint_image": "lang/english/images/hat-hint.png",
+      "word_audio": "lang/english/audios/hat.mp3",
+      "letter_audio": [
+        "lang/english/audios/h.mp3",
+        "lang/english/audios/a.mp3",
+        "lang/english/audios/t.mp3"
+      ],
       "emoji": "🎩"
     },
     {
       "level_id": 6,
       "target_word": "box",
-      "letters": ["b", "o", "x"],
-      "foils": ["t", "s"],
-      "image": "box",
-      "hint_image": "box-hint",
-      "word_audio": "box",
-      "letter_audio": ["b", "o", "x"],
+      "letters": [
+        "b",
+        "o",
+        "x"
+      ],
+      "foils": [
+        "t",
+        "s"
+      ],
+      "image": "lang/english/images/box.png",
+      "hint_image": "lang/english/images/box-hint.png",
+      "word_audio": "lang/english/audios/box.mp3",
+      "letter_audio": [
+        "lang/english/audios/b.mp3",
+        "lang/english/audios/o.mp3",
+        "lang/english/audios/x.mp3"
+      ],
       "emoji": "📦"
     },
     {
       "level_id": 7,
       "target_word": "bag",
-      "letters": ["b", "a", "g"],
-      "foils": ["d", "r"],
-      "image": "bag",
-      "hint_image": "bag-hint",
-      "word_audio": "bag",
-      "letter_audio": ["b", "a", "g"],
+      "letters": [
+        "b",
+        "a",
+        "g"
+      ],
+      "foils": [
+        "d",
+        "r"
+      ],
+      "image": "lang/english/images/bag.png",
+      "hint_image": "lang/english/images/bag-hint.png",
+      "word_audio": "lang/english/audios/bag.mp3",
+      "letter_audio": [
+        "lang/english/audios/b.mp3",
+        "lang/english/audios/a.mp3",
+        "lang/english/audios/g.mp3"
+      ],
       "emoji": "👜"
     },
     {
       "level_id": 8,
       "target_word": "pen",
-      "letters": ["p", "e", "n"],
-      "foils": ["t", "l"],
-      "image": "pen",
-      "hint_image": "pen-hint",
-      "word_audio": "pen",
-      "letter_audio": ["p", "e", "n"],
+      "letters": [
+        "p",
+        "e",
+        "n"
+      ],
+      "foils": [
+        "t",
+        "l"
+      ],
+      "image": "lang/english/images/pen.png",
+      "hint_image": "lang/english/images/pen-hint.png",
+      "word_audio": "lang/english/audios/pen.mp3",
+      "letter_audio": [
+        "lang/english/audios/p.mp3",
+        "lang/english/audios/e.mp3",
+        "lang/english/audios/n.mp3"
+      ],
       "emoji": "✒️"
     },
     {
       "level_id": 9,
       "target_word": "key",
-      "letters": ["k", "e", "y"],
-      "foils": ["r", "s"],
-      "image": "key",
-      "hint_image": "key-hint",
-      "word_audio": "key",
-      "letter_audio": ["k", "e", "y"],
+      "letters": [
+        "k",
+        "e",
+        "y"
+      ],
+      "foils": [
+        "r",
+        "s"
+      ],
+      "image": "lang/english/images/key.png",
+      "hint_image": "lang/english/images/key-hint.png",
+      "word_audio": "lang/english/audios/key.mp3",
+      "letter_audio": [
+        "lang/english/audios/k.mp3",
+        "lang/english/audios/e.mp3",
+        "lang/english/audios/y.mp3"
+      ],
       "emoji": "🔑"
     },
     {
       "level_id": 10,
       "target_word": "bed",
-      "letters": ["b", "e", "d"],
-      "foils": ["h", "s"],
-      "image": "bed",
-      "hint_image": "bed-hint",
-      "word_audio": "bed",
-      "letter_audio": ["b", "e", "d"],
+      "letters": [
+        "b",
+        "e",
+        "d"
+      ],
+      "foils": [
+        "h",
+        "s"
+      ],
+      "image": "lang/english/images/bed.png",
+      "hint_image": "lang/english/images/bed-hint.png",
+      "word_audio": "lang/english/audios/bed.mp3",
+      "letter_audio": [
+        "lang/english/audios/b.mp3",
+        "lang/english/audios/e.mp3",
+        "lang/english/audios/d.mp3"
+      ],
       "emoji": "🛏️"
     }
   ]
