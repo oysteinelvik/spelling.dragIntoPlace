@@ -322,6 +322,20 @@ function setupEvents() {
   $('moving-mode').addEventListener('change', (event) => { state.moving = event.target.checked; renderPuzzle(); });
   $('answer-slots').addEventListener('pointerover', (event) => event.target.closest('.slot')?.classList.add('over'));
   $('answer-slots').addEventListener('pointerout', (event) => event.target.closest('.slot')?.classList.remove('over'));
+  let resizeTimer;
+  const reclamp = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(clampAllTilesToSurface, 120); };
+  window.addEventListener('resize', reclamp);
+  window.addEventListener('orientationchange', reclamp);
+}
+
+function clampAllTilesToSurface() {
+  if ($('game').hidden) return;
+  document.querySelectorAll('#tile-layer .tile').forEach((tile) => {
+    if (tile.classList.contains('locked') || tile.classList.contains('gone')) return;
+    const landing = clampToSurface(tile, parseFloat(tile.style.left) || 0, parseFloat(tile.style.top) || 0);
+    tile.style.left = `${landing.left}px`;
+    tile.style.top = `${landing.top}px`;
+  });
 }
 
 async function boot() {
