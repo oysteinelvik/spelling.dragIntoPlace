@@ -100,11 +100,63 @@ function speak(text, tone = 520) {
   $('feedback').dataset.lastSpoken = text;
 }
 
-function boundedPosition(tile) {
-  const bank = $('tile-bank').getBoundingClientRect();
-  const width = tile.offsetWidth || 60;
-  const height = tile.offsetHeight || 70;
-  return { left: Math.max(0, Math.random() * Math.max(0, bank.width - width)), top: Math.max(0, Math.random() * Math.max(0, bank.height - height)) };
+function surfaceRect() { return $('game').getBoundingClientRect(); }
+
+function getReservedRects(rect) {
+  const margin = 10;
+  const elements = [$('status-bar'), $('clue-chip'), $('word-area'), $('mode-toggle-wrap')];
+  if (!$('next-word').hidden) elements.push($('next-word'));
+  return elements.filter(Boolean).map((element) => {
+    const box = element.getBoundingClientRect();
+    return { left: box.left - rect.left - margin, right: box.right - rect.left + margin, top: box.top - rect.top - margin, bottom: box.bottom - rect.top + margin };
+  });
+}
+
+function overlapsReserved(left, top, width, height, reserved) {
+  const right = left + width; const bottom = top + height;
+  return reserved.some((zone) => left < zone.right && right > zone.left && top < zone.bottom && bottom > zone.top);
+}
+
+function randomTilePosition(tile) {
+  const rect = surfaceRect();
+  const width = tile.offsetWidth || 70; const height = tile.offsetHeight || 74;
+  const maxLeft = Math.max(0, rect.width - width); const maxTop = Math.max(0, rect.height - height);
+  const reserved = getReservedRects(rect);
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const left = Math.random() * maxLeft; const top = Math.random() * maxTop;
+    if (!overlapsReserved(left, top, width, height, reserved)) return { left, top };
+  }
+  return { left: Math.random() * maxLeft, top: Math.max(0, maxTop - 10) };
+}
+
+function randomMovingTop(tile) {
+  const rect = surfaceRect();
+  const height = tile.offsetHeight || 74; const maxTop = Math.max(0, rect.height - height);
+  const reserved = getReservedRects(rect);
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const top = Math.random() * maxTop;
+    if (!overlapsReserved(12, top, 40, height, reserved)) return top;
+  }
+  return maxTop;
+}
+
+function clampToSurface(tile, left, top) {
+  const rect = surfaceRect();
+  const width = tile.offsetWidth || 70; const height = tile.offsetHeight || 74;
+  const maxLeft = Math.max(0, rect.width - width); const maxTop = Math.max(0, rect.height - height);
+  return { left: Math.min(Math.max(left, 0), maxLeft), top: Math.min(Math.max(top, 0), maxTop) };
+}
+
+function resolveLanding(tile, left, top) {
+  const width = tile.offsetWidth || 70; const height = tile.offsetHeight || 74;
+  let landing = clampToSurface(tile, left, top);
+  for (let pass = 0; pass < 4; pass++) {
+    const reserved = getReservedRects(surfaceRect());
+    const hit = reserved.find((zone) => overlapsReserved(landing.left, landing.top, width, height, [zone]));
+    if (!hit) break;
+    landing = clampToSurface(tile, landing.left, hit.bottom + 4);
+  }
+  return landing;
 }
 
 function setFeedback(message, type = '') {
@@ -118,12 +170,11 @@ function renderPuzzle() {
   state.placements = Array(puzzle.letters.length).fill(null);
   state.hints = Array(puzzle.letters.length).fill(false);
   state.activeTiles = [...puzzle.letters.map((letter, index) => ({ id: `letter-${index}`, value: letter, index, foil: false })), ...puzzle.foils.map((letter, index) => ({ id: `foil-${index}`, value: letter, index, foil: true }))].sort(() => Math.random() - .5);
-  $('word-prompt').textContent = `Spell ${puzzle.target_word.length} letters`;
   $('clue-art').textContent = puzzle.emoji || '🧩';
   $('clue-art').setAttribute('aria-label', `Picture clue for ${puzzle.target_word}`);
   $('answer-slots').innerHTML = puzzle.letters.map((_, index) => `<div class="slot" data-slot="${index}" tabindex="0" aria-label="Empty letter position ${index + 1}"></div>`).join('');
   $('hints').innerHTML = puzzle.letters.map((letter, index) => `<div class="hint" data-hint="${index}" aria-label="Hint for position ${index + 1}">${state.hints[index] ? letter : '·'}</div>`).join('');
-  $('tile-bank').innerHTML = '';
+  $('tile-layer').innerHTML = '';
   state.activeTiles.forEach((tile) => addTile(tile));
   $('next-word').hidden = true;
   setFeedback('');
@@ -136,8 +187,16 @@ function addTile(tileData) {
   tile.dataset.id = tileData.id; tile.dataset.value = tileData.value; tile.dataset.index = tileData.index; tile.dataset.foil = tileData.foil;
   tile.setAttribute('aria-label', `${tileData.foil ? 'Foil' : 'Letter'} ${tileData.value}`);
   tile.addEventListener('pointerdown', (event) => beginDrag(event, tile));
-  $('tile-bank').appendChild(tile);
-  if (state.moving) requestAnimationFrame(() => tile.classList.add('moving'));
+  $('tile-layer').appendChild(tile);
+  if (state.moving) {
+    tile.style.left = '12px';
+    tile.style.top = `${randomMovingTop(tile)}px`;
+    requestAnimationFrame(() => tile.classList.add('moving'));
+  } else {
+    const spot = randomTilePosition(tile);
+    tile.style.left = `${spot.left}px`;
+    tile.style.top = `${spot.top}px`;
+  }
 }
 
 function beginDrag(event, tile) {
@@ -154,6 +213,11 @@ function beginDrag(event, tile) {
     tile.removeEventListener('pointermove', move);
     tile.removeEventListener('pointerup', end);
     tile.removeEventListener('pointercancel', cancel);
+    if (moved) {
+      const landing = resolveLanding(tile, (parseFloat(tile.style.left) || 0) + (endEvent.clientX - event.clientX), (parseFloat(tile.style.top) || 0) + (endEvent.clientY - event.clientY));
+      tile.style.left = `${landing.left}px`;
+      tile.style.top = `${landing.top}px`;
+    }
     tile.style.transform = '';
     if (!moved) return;
     const target = findDropSlot(endEvent.clientX, endEvent.clientY);
@@ -196,9 +260,9 @@ function placeTile(tile, slotIndex) {
   }
   if (value !== expected) {
     setFeedback('Almost. Try another space.', 'bad'); speak('try again', 190);
-    tile.style.position = '';
-    tile.style.left = '';
-    tile.style.top = '';
+    const bounce = randomTilePosition(tile);
+    tile.style.left = `${bounce.left}px`;
+    tile.style.top = `${bounce.top}px`;
     tile.classList.add('wrong-drop');
     setTimeout(() => tile.classList.remove('wrong-drop'), 300);
     emit('user_sessions_data', { type: 'incorrect_letter', lang, level_id: state.puzzle.level_id });
@@ -212,7 +276,7 @@ function placeTile(tile, slotIndex) {
   if (state.placements.every(Boolean)) completePuzzle();
 }
 
-function returnToBank(tile) { tile.classList.remove('stopped'); tile.style.transform = ''; }
+function returnToBank(tile) { tile.classList.remove('stopped'); }
 
 function completePuzzle() {
   if (state.completionEventSent) return;
@@ -222,7 +286,7 @@ function completePuzzle() {
 }
 
 function nextPuzzle() {
-  state.puzzleIndex = (state.puzzleIndex + 1) % state.content.puzzles.length; state.puzzle = state.content.puzzles[state.puzzleIndex]; state.completionEventSent = false; renderPuzzle(); showView('game');
+  state.puzzleIndex = (state.puzzleIndex + 1) % state.content.puzzles.length; state.puzzle = state.content.puzzles[state.puzzleIndex]; state.completionEventSent = false; showView('game'); renderPuzzle();
 }
 
 function updateProgress() {
@@ -241,7 +305,7 @@ async function boot() {
   try {
     state.content = await loadContent(); const saved = readProgress(); state.puzzleIndex = Number.isInteger(saved.puzzleIndex) ? saved.puzzleIndex % state.content.puzzles.length : 0; state.completed = Number(saved.completed) || 0; state.puzzle = state.content.puzzles[state.puzzleIndex];
     if (!state.sessionEventSent) { emit('user_sessions_data', { type: 'session_started', lang }); state.sessionEventSent = true; }
-    renderPuzzle(); showView('game');
+    showView('game'); renderPuzzle();
   } catch (error) { $('error-copy').textContent = error.message; showView('error'); }
 }
 
