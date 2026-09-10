@@ -19,7 +19,7 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
-const views = { loading: $('loading'), game: $('game'), complete: $('complete'), error: $('error') };
+const views = { game: $('game'), complete: $('complete'), error: $('error') };
 
 function showView(name) {
   Object.entries(views).forEach(([key, element]) => { element.hidden = key !== name; });
@@ -238,7 +238,6 @@ function setupEvents() {
 }
 
 async function boot() {
-  showView('loading');
   try {
     state.content = await loadContent(); const saved = readProgress(); state.puzzleIndex = Number.isInteger(saved.puzzleIndex) ? saved.puzzleIndex % state.content.puzzles.length : 0; state.completed = Number(saved.completed) || 0; state.puzzle = state.content.puzzles[state.puzzleIndex];
     if (!state.sessionEventSent) { emit('user_sessions_data', { type: 'session_started', lang }); state.sessionEventSent = true; }
